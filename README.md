@@ -1,8 +1,8 @@
-miniPy
-======
+miniPyRuntime
+=============
 
-a mini Python 2.7.3 runtime builder
----------------------------------------------------------------------
+a mini Python 2.7.3 runtime builder based on "eGenix PyRun"
+
 
 FEATURES
 --------
