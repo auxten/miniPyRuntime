@@ -37,3 +37,14 @@ DEPLOY&USAGE
 
 3. enjoy it!
 
+
+TOOLS WE USE
+------------
+
+1. eGenix PyRun http://www.egenix.com/products/python/PyRun
+
+2. upx          http://upx.sourceforge.net
+
+3. freeze       http://wiki.python.org/moin/Freeze
+
+4. strip        man strip
