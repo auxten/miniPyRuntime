@@ -3,10 +3,12 @@
 all: download compile compile_static pack
 
 download:
-	wget -qO - 'http://downloads.egenix.com/python/egenix-pyrun-1.1.0.tar.gz?baseurl=http%3A%2F%2Fdownloads.egenix.com%2Fpython%2F&product=egenix-pyrun&version=1.1.0&archive=tar.gz&dummy=' | tar xz
-	wget -qO - 'http://upx.sourceforge.net/download/upx-3.08-amd64_linux.tar.bz2' | tar xj
+	#wget -qO - 'http://downloads.egenix.com/python/egenix-pyrun-1.1.0.tar.gz?baseurl=http%3A%2F%2Fdownloads.egenix.com%2Fpython%2F&product=egenix-pyrun&version=1.1.0&archive=tar.gz&dummy=' | tar xz
+	tar xzvf egenix-pyrun-1.1.0.tar.gz
+	#wget -qO - 'http://upx.sourceforge.net/download/upx-3.08-amd64_linux.tar.bz2' | tar xj
+	tar xjvf upx-3.08-amd64_linux.tar.bz2
 	mv upx-3.08-amd64_linux/upx .
-	wget -q 'http://pypi.python.org/packages/source/d/distribute/distribute-0.6.32.tar.gz'
+	#wget -q 'http://pypi.python.org/packages/source/d/distribute/distribute-0.6.32.tar.gz'
 
 compile:
 	cd egenix-pyrun-1.1.0/PyRun/ &&\
