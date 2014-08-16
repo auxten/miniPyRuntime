@@ -1,0 +1,150 @@
+#!/bin/bash
+#
+
+# Generate debug output ?
+DEBUG=0
+
+### Configuration
+
+# Select Python version (major.minor)
+PYTHON_VERSION=2.7
+
+# Select PyRun version (major.minor.patch)
+PYRUN_VERSION=1.1.0
+
+# Platform string on the PyRun binary distribution (usually
+# auto-detected, see below)
+PLATFORM=
+
+# PyRun distribution file. This may contain path information and is
+# set from the above configuration parameters, if not given explicitly
+# via --pyrun-distribution=
+PYRUN_DISTRIBUTION="miniPyPack.tgz"
+
+# Local PyRun distribution directory to search in
+LOCAL_PYRUN_DISTRIBUTION_DIR=/downloads/egenix
+
+### Parse options
+
+INSTALL_DISTRIBUTE=1
+INSTALL_PIP=0
+LOG_INSTALLATION=0
+RUN_SILENT=0
+VERBOSITY=0
+INSTALLATION_DIR=$1
+
+# Installation directory
+if [ -z "$INSTALLATION_DIR" ]; then
+    echo "$HELP"
+    exit 1
+fi
+
+### Helpers
+
+# Current work dir
+CWD=`pwd`
+
+# Tools
+TAR=tar
+MKDIR=mkdir
+RM=rm
+ECHO=echo
+
+# Log file
+if (( $LOG_INSTALLATION )); then
+    LOG_FILE=$CWD/$INSTALLATION_DIR/pyrun-installation.log
+else
+    LOG_FILE=/dev/null
+fi
+if (( $RUN_SILENT )); then
+    LOG_FILE=/dev/null
+    ECHO=true
+fi
+
+# Detect platform, if not given
+PLATFORM_UNAME=`uname -s -p`
+if [[ -z "$PLATFORM" ]]; then
+    case "$PLATFORM_UNAME" in
+        Linux\ x86_64 )
+            PLATFORM=linux-x86_64
+            ;;
+        Linux\ i?86 )
+            PLATFORM=linux-i686
+            ;;
+        FreeBSD\ amd64 )
+            PLATFORM=freebsd-8.3-RELEASE-p3-amd64
+            ;;
+        FreeBSD\ i386 )
+            PLATFORM=freebsd-8.3-RELEASE-p3-i386
+            ;;
+        Darwin\ powerpc )
+            PLATFORM=macosx-10.4-fat
+            ;;
+        Darwin\ i386 )
+            OS_VERSION=`uname -r`
+            if (( ${OS_VERSION%%.*} < 10 )); then
+                # Leopard and earlier default to 32-bit applications
+                PLATFORM=macosx-10.4-fat
+            else
+                # Snow Leopard and later can run 64-bit applications
+                PLATFORM=macosx-10.5-x86_64
+            fi
+            ;;
+        Darwin\ x86_64 )
+            PLATFORM=macosx-10.5-x86_64
+            ;;
+        * )
+            echo "Unknown platform. Please set manually using --platform=..."
+            exit 1
+            ;;
+    esac
+fi
+
+if (( DEBUG )); then
+    $ECHO "Using the following PyRun installation settings:"
+    $ECHO "  PYRUN_DISTRIBUTION=${PYRUN_DISTRIBUTION}"
+    $ECHO "  LOCAL_PYRUN_DISTRIBUTION=${LOCAL_PYRUN_DISTRIBUTION}"
+    $ECHO "  REMOTE_PYRUN_DISTRIBUTION=${REMOTE_PYRUN_DISTRIBUTION}"
+    $ECHO "  INSTALLATION_DIR=${INSTALLATION_DIR}"
+fi
+
+### Installation
+
+# Install PyRun
+$MKDIR -p $INSTALLATION_DIR
+$ECHO "Installing PyRun ..." 2>&1 | tee -a $LOG_FILE
+$TAR -x -v -z -f $PYRUN_DISTRIBUTION -C $INSTALLATION_DIR >> $LOG_FILE 2>&1
+rc=$?
+if (( $rc )); then
+echo "Failed to extract $PYRUN_DISTRIBUTION"
+exit $rc
+fi
+$ECHO "" >> $LOG_FILE 2>&1
+
+# Install distribute
+if (( $INSTALL_DISTRIBUTE )); then
+    $ECHO "Installing distribute ..." 2>&1 | tee -a $LOG_FILE
+    cd $INSTALLATION_DIR && bin/python distribute_setup.py >> $LOG_FILE 2>&1
+    rc=$?
+    if (( $rc )); then
+	echo "Failed to install distribute"
+	exit $rc
+    fi
+    $RM -rf distribute* >> $LOG_FILE 2>&1
+    $ECHO "" >> $LOG_FILE 2>&1
+fi
+
+# Install pip
+if (( $INSTALL_PIP )); then
+    $ECHO "Installing pip ..." 2>&1 | tee -a $LOG_FILE
+    bin/easy_install pip >> $LOG_FILE 2>&1
+    rc=$?
+    if (( $rc )); then
+	echo "Failed to install pip"
+	exit $rc
+    fi
+    $ECHO "" >> $LOG_FILE 2>&1
+fi
+
+# Finished
+$ECHO "Finished"
